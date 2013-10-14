@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:lso="net.icodeapps.examples.lso.*"
+               implements="net.icodeapps.examples.lso.IConfigurable">
+
+    <fx:Declarations>
+        <lso:SharedObjectDecorator/>
+    </fx:Declarations>
+
+    <fx:Script>
+        <![CDATA[
+        import net.icodeapps.examples.lso.Configuration;
+        import net.icodeapps.examples.lso.Property;
+        import net.icodeapps.examples.lso.events.ConfigurationEvent;
+
+        import spark.events.IndexChangeEvent;
+
+        import spark.events.TextOperationEvent;
+
+        private var _configuration:Configuration;
+
+        private const _tmpProperty:Property = new Property();
+
+        private function getProperty():Property {
+            return (propertiesList.selectedItem as Property)
+                    || _tmpProperty;
+        }
+
+        [Bindable("configurationChanged")]
+        public function get configuration():Configuration {
+            return _configuration;
+        }
+
+        public function set configuration(value:Configuration):void {
+            if (_configuration == value) {
+                return;
+            }
+            _configuration = value;
+            dispatchEvent(new Event("configurationChanged"));
+        }
+
+        private function addNewPropertyButton_clickHandler(event:MouseEvent):void {
+            const p:Property = new Property();
+            p.name = propertyNameInput.text;
+            p.value = propertyValueInput.text;
+            _configuration.dataStore.addItem(p.clone());
+
+            p.name = p.value = ''; // reset the data
+        }
+
+        private function saveConfigurationButton_clickHandler(event:MouseEvent):void {
+            dispatchEvent(new ConfigurationEvent(ConfigurationEvent.SAVE_CONFIGURATION));
+        }
+
+        private function clearSelectionButton_clickHandler(event:MouseEvent):void {
+            propertiesList.selectedIndex = -1;
+        }
+
+        private function propertyValueInput_changeHandler(event:TextOperationEvent):void {
+            const p:Property = getProperty();
+            p.value = propertyValueInput.text;
+        }
+
+        private function propertiesList_changeHandler(event:IndexChangeEvent):void {
+            const p:Property = getProperty();
+            propertyNameInput.text = p.name;
+            propertyValueInput.text = p.value;
+        }
+        ]]>
+    </fx:Script>
+    <s:layout>
+        <s:HorizontalLayout
+                horizontalAlign="center"
+                verticalAlign="middle"/>
+    </s:layout>
+    <s:HGroup>
+        <s:List
+                id="propertiesList"
+                dataProvider="{configuration.dataStore}"
+                change="propertiesList_changeHandler(event)"
+                labelField="value"/>
+        <s:VGroup>
+            <s:TextInput
+                    id="propertyNameInput"
+                    prompt="type"/>
+            <s:TextInput
+                    id="propertyValueInput"
+                    change="propertyValueInput_changeHandler(event)"
+                    prompt="value"/>
+            <s:HGroup>
+                <s:Button
+                        id="clearSelectionButton"
+                        click="clearSelectionButton_clickHandler(event)"
+                        cornerRadius="0"
+                        label="clear selection"/>
+                <s:Button
+                        id="addNewPropertyButton"
+                        click="addNewPropertyButton_clickHandler(event)"
+                        cornerRadius="0"
+                        label="add"/>
+                <s:Button
+                        id="saveConfigurationButton"
+                        click="saveConfigurationButton_clickHandler(event)"
+                        cornerRadius="0"
+                        label="save"/>
+            </s:HGroup>
+        </s:VGroup>
+    </s:HGroup>
+</s:Application>
